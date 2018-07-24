@@ -10,12 +10,20 @@ import SpriteKit
 import GameplayKit
 
 class Spaceship: SKSpriteNode {
+
+    var reactorNode: SKEmitterNode?
+
     var propulsorForceDirection: CGVector? {
         didSet {
             if let vector = propulsorForceDirection {
+                zRotation = atan2(vector.dy, vector.dx) - CGFloat(Double.pi/2)
+                physicsBody?.angularVelocity = 0
                 let vectorLength: CGFloat = 0.2
                 let adaptingRatio = sqrt((pow(vector.dx, 2) + pow(vector.dy, 2)) / pow(vectorLength, 2))
                 propulsorForceDirection = CGVector(dx: vector.dx / adaptingRatio, dy: vector.dy / adaptingRatio)
+                reactorNode?.particleBirthRate = 200
+            } else {
+                reactorNode?.particleBirthRate = 0
             }
         }
     }
@@ -86,6 +94,14 @@ class GameScene: SKScene {
         spaceship.position = CGPoint(x: size.width / 2, y: 0.8 * size.height)
         spaceship.zPosition = 0
         spaceship.physicsBody = createSpaceshipBody()
+        if let emitterNode = SKEmitterNode(fileNamed: "fireParticles.sks") {
+            emitterNode.xScale = 0.3
+            emitterNode.yScale = 0.3
+            emitterNode.particleBirthRate = 0
+            emitterNode.zPosition = -1
+            spaceship.addChild(emitterNode)
+            spaceship.reactorNode = emitterNode
+        }
         self.spaceship = spaceship
         addChild(spaceship)
     }
