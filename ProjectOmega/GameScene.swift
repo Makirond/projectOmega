@@ -9,15 +9,34 @@
 import SpriteKit
 import GameplayKit
 
+class Spaceship: SKSpriteNode {
+    var propulsorForceDirection: CGVector? {
+        didSet {
+            if let vector = propulsorForceDirection {
+                let vectorLength: CGFloat = 0.2
+                let adaptingRatio = sqrt((pow(vector.dx, 2) + pow(vector.dy, 2)) / pow(vectorLength, 2))
+                propulsorForceDirection = CGVector(dx: vector.dx / adaptingRatio, dy: vector.dy / adaptingRatio)
+            }
+        }
+    }
+}
+
 class GameScene: SKScene {
 
-    private var spaceship: SKSpriteNode?
+    private var spaceship: Spaceship?
 
     override func didMove(to view: SKView) {
+        physicsWorld.speed = 0.2
+        physicsWorld.gravity = .zero
         addBackground()
-        addPlanetGround()
+        addPlanet()
         addSpaceship()
-        addLandingPlatform()
+    }
+
+    override func update(_ currentTime: TimeInterval) {
+        if let propulsorVector = spaceship?.propulsorForceDirection {
+            spaceship?.physicsBody?.applyImpulse(propulsorVector)
+        }
     }
 
     private func addBackground() {
@@ -27,49 +46,61 @@ class GameScene: SKScene {
         addChild(spaceBackground)
     }
 
-    private func addPlanetGround() {
-        let planetGround = SKSpriteNode(imageNamed: "MoonSurface")
-        planetGround.scale(to: CGSize(width: size.width, height: size.height/4))
-        planetGround.position = CGPoint(x: planetGround.size.width/2, y: 0)
+    private func addPlanet() {
+        let planetGround = SKShapeNode(circleOfRadius: 50)
+        planetGround.position = CGPoint(x: size.width/2, y: size.height/2)
+        planetGround.fillColor = .white
         planetGround.zPosition = -1
-        let planetGroundPhysic = SKPhysicsBody(rectangleOf: planetGround.frame.size)
+        let planetGroundPhysic = SKPhysicsBody(circleOfRadius: 50)
         planetGroundPhysic.friction = 0.8
         planetGroundPhysic.isDynamic = false
         planetGround.physicsBody = planetGroundPhysic
+        let gravity = SKFieldNode.radialGravityField()
+        gravity.strength = 3
+        planetGround.addChild(gravity)
         addChild(planetGround)
     }
 
     private func addSpaceship() {
-        let spaceship = SKSpriteNode(imageNamed: "Spaceship")
-        spaceship.size = CGSize(width: 100, height: 100)
-        spaceship.position = CGPoint(x: 100, y: size.height)
+        let spaceship = Spaceship(imageNamed: "Spaceship")
+        spaceship.size = CGSize(width: 20, height: 20)
+        spaceship.position = CGPoint(x: size.width / 2, y: 0.8 * size.height)
         spaceship.zPosition = 0
         let bodySize = CGSize(width: 0.8 * spaceship.size.width, height: 0.8 * spaceship.size.height)
         let spaceshipPhysics = SKPhysicsBody(rectangleOf: bodySize)
         spaceshipPhysics.friction = 0.8
+        spaceshipPhysics.linearDamping = 0
+        spaceshipPhysics.angularDamping = 0
         spaceship.physicsBody = spaceshipPhysics
         self.spaceship = spaceship
         addChild(spaceship)
     }
 
-    private func addLandingPlatform() {
-        let landingNode = SKShapeNode(rectOf: CGSize(width: 200, height: 40), cornerRadius: 10)
-        landingNode.fillColor = .gray
-        landingNode.position = CGPoint(x: 0.8 * size.width, y: 0.5 * size.height)
-        let landingNodeBody = SKPhysicsBody(rectangleOf: landingNode.frame.size)
-        landingNodeBody.isDynamic = false
-        landingNode.physicsBody = landingNodeBody
-        addChild(landingNode)
-    }
-
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         guard let mainTouchLocation = touches.first?.location(in: self),
-        let spaceship = self.spaceship else {
+        let spaceship = spaceship else {
             return
         }
-        var forceVector = CGVector(dx: mainTouchLocation.x - spaceship.position.x, dy: mainTouchLocation.y - spaceship.position.y)
-        forceVector.dx = forceVector.dx < 0 ? -40 : 40
-        forceVector.dy = forceVector.dy < 0 ? -120 : 120
-        spaceship.physicsBody?.applyImpulse(forceVector)
+        let dx = mainTouchLocation.x - spaceship.position.x
+        let dy = mainTouchLocation.y - spaceship.position.y
+        spaceship.propulsorForceDirection = CGVector(dx: dx, dy: dy)
+    }
+
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+        guard let mainTouchLocation = touches.first?.location(in: self),
+            let spaceship = spaceship else {
+                return
+        }
+        let dx = mainTouchLocation.x - spaceship.position.x
+        let dy = mainTouchLocation.y - spaceship.position.y
+        spaceship.propulsorForceDirection = CGVector(dx: dx, dy: dy)
+    }
+
+    override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
+        spaceship?.propulsorForceDirection = nil
+    }
+
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        spaceship?.propulsorForceDirection = nil
     }
 }
