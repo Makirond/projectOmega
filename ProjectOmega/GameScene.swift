@@ -31,6 +31,7 @@ class GameScene: SKScene {
         addBackground()
         addPlanet()
         addSpaceship()
+        //
     }
 
     override func update(_ currentTime: TimeInterval) {
