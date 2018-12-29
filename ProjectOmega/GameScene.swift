@@ -29,10 +29,6 @@ class Spaceship: SKSpriteNode {
         let dx = vectorLength * sin(-zRotation)
         let dy = vectorLength * cos(-zRotation)
         propulsorForceVector = CGVector(dx: dx, dy: dy)
-        print(zRotation * 180.0 / .pi)
-        if let propulsorForceVector = propulsorForceVector {
-            print(propulsorForceVector)
-        }
     }
 }
 
@@ -48,13 +44,12 @@ class GameScene: SKScene {
     private var pinchRecognizer: UIPinchGestureRecognizer?
 
 
-    func leftJoystickPowerChanged(to newValueInPercent: Double){
-        let newAngle = newValueInPercent * 2.0 * Double.pi - Double.pi/2
-        spaceship?.zRotation = CGFloat(newAngle)
+    func joystickOrientationChanged(to newAngleInRadian: CGFloat){
+        spaceship?.zRotation = newAngleInRadian
         physicsBody?.angularVelocity = 0
     }
 
-    func rightJoystickPowerChanged(to newValueInPercent:Float){
+    func joystickPowerChanged(to newValueInPercent:Double){
         spaceship?.speedPercent = CGFloat(newValueInPercent)
     }
 
