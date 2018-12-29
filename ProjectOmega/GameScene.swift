@@ -8,23 +8,30 @@
 
 import SpriteKit
 import GameplayKit
+import UIKit
 
 class Spaceship: SKSpriteNode {
 
     var reactorNode: SKEmitterNode?
 
-    var propulsorForceDirection: CGVector? {
+    var speedPercent: CGFloat = 0 {
         didSet {
-            if let vector = propulsorForceDirection {
-                zRotation = atan2(vector.dy, vector.dx) - CGFloat(Double.pi/2)
-                physicsBody?.angularVelocity = 0
-                let vectorLength: CGFloat = 0.2
-                let adaptingRatio = sqrt((pow(vector.dx, 2) + pow(vector.dy, 2)) / pow(vectorLength, 2))
-                propulsorForceDirection = CGVector(dx: vector.dx / adaptingRatio, dy: vector.dy / adaptingRatio)
-                reactorNode?.particleBirthRate = 200
-            } else {
-                reactorNode?.particleBirthRate = 0
-            }
+            let maxParticules: CGFloat = 200
+            reactorNode?.particleBirthRate = speedPercent * maxParticules
+        }
+    }
+
+    var propulsorForceVector: CGVector?
+
+    func updatePropulsorForceVector() {
+        let maxSpeed: CGFloat = 0.2
+        let vectorLength = speedPercent * maxSpeed
+        let dx = vectorLength * sin(-zRotation)
+        let dy = vectorLength * cos(-zRotation)
+        propulsorForceVector = CGVector(dx: dx, dy: dy)
+        print(zRotation * 180.0 / .pi)
+        if let propulsorForceVector = propulsorForceVector {
+            print(propulsorForceVector)
         }
     }
 }
@@ -36,43 +43,67 @@ private struct Constants {
 
 class GameScene: SKScene {
 
+    private var planet: SKShapeNode?
     private var spaceship: Spaceship?
+    private var pinchRecognizer: UIPinchGestureRecognizer?
+
+
+    func leftJoystickPowerChanged(to newValueInPercent: Double){
+        let newAngle = newValueInPercent * 2.0 * Double.pi - Double.pi/2
+        spaceship?.zRotation = CGFloat(newAngle)
+        physicsBody?.angularVelocity = 0
+    }
+
+    func rightJoystickPowerChanged(to newValueInPercent:Float){
+        spaceship?.speedPercent = CGFloat(newValueInPercent)
+    }
 
     // MARK: - Life cycle
 
     override func didMove(to view: SKView) {
         physicsWorld.speed = 0.2
         physicsWorld.gravity = .zero
-        addBackground()
+
+        pinchRecognizer = UIPinchGestureRecognizer(target: self, action: #selector(handleZoom(for:)))
+        view.addGestureRecognizer(pinchRecognizer!)
+
+        addCamera()
         addPlanet()
         addSpaceship()
+    }
+
+    @objc
+    private func handleZoom(for gestureRecognizer: UIPinchGestureRecognizer) {
+        if gestureRecognizer.state == .changed {
+            camera?.setScale(1.0/gestureRecognizer.scale)
+        }
     }
 
     // MARK: - Run loop
 
     override func update(_ currentTime: TimeInterval) {
-        if let propulsorVector = spaceship?.propulsorForceDirection {
+        spaceship?.updatePropulsorForceVector()
+        if let propulsorVector = spaceship?.propulsorForceVector {
             spaceship?.physicsBody?.applyImpulse(propulsorVector)
         }
     }
 
     // MARK: - Nodes creation
 
-    private func addBackground() {
-        let spaceBackground = SKSpriteNode(imageNamed: "BlueSpace.jpg")
-        spaceBackground.position = CGPoint(x: size.width/2, y: size.height/2)
-        spaceBackground.zPosition = -2
-        addChild(spaceBackground)
+    private func addCamera() {
+        let cameraNode = SKCameraNode()
+        camera = cameraNode
+        addChild(cameraNode)
     }
 
     private func addPlanet() {
-        let planetGround = SKShapeNode(circleOfRadius: Constants.planetRadius)
-        planetGround.position = CGPoint(x: size.width/2, y: size.height/2)
-        planetGround.fillColor = .white
-        planetGround.zPosition = -1
-        planetGround.physicsBody = createPlanetBody()
-        planetGround.addChild(smallGravityNode())
-        addChild(planetGround)
+        let planet = SKShapeNode(circleOfRadius: Constants.planetRadius)
+        planet.fillColor = .white
+        planet.zPosition = -1
+        planet.physicsBody = createPlanetBody()
+        planet.addChild(smallGravityNode())
+        self.planet = planet
+        addChild(planet)
     }
 
     private func createPlanetBody() -> SKPhysicsBody {
@@ -91,7 +122,6 @@ class GameScene: SKScene {
     private func addSpaceship() {
         let spaceship = Spaceship(imageNamed: "Spaceship")
         spaceship.size = CGSize(width: Constants.spaceshipSize, height: Constants.spaceshipSize)
-        spaceship.position = CGPoint(x: size.width / 2, y: 0.8 * size.height)
         spaceship.zPosition = 0
         spaceship.physicsBody = createSpaceshipBody()
         if let emitterNode = SKEmitterNode(fileNamed: "fireParticles.sks") {
@@ -113,37 +143,5 @@ class GameScene: SKScene {
         body.linearDamping = 0
         body.angularDamping = 0
         return body
-    }
-
-    // MARK: - Events handling
-
-    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        guard let mainTouchLocation = touches.first?.location(in: self),
-        let spaceship = spaceship else {
-            return
-        }
-        spaceship.propulsorForceDirection = vector(for: mainTouchLocation, comparedTo: spaceship)
-    }
-
-    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
-        guard let mainTouchLocation = touches.first?.location(in: self),
-            let spaceship = spaceship else {
-                return
-        }
-        spaceship.propulsorForceDirection = vector(for: mainTouchLocation, comparedTo: spaceship)
-    }
-
-    private func vector(for touchPosition: CGPoint, comparedTo node:SKNode) -> CGVector {
-        let dx = touchPosition.x - node.position.x
-        let dy = touchPosition.y - node.position.y
-        return CGVector(dx: dx, dy: dy)
-    }
-
-    override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
-        spaceship?.propulsorForceDirection = nil
-    }
-
-    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-        spaceship?.propulsorForceDirection = nil
     }
 }
