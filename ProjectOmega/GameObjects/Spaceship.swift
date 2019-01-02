@@ -12,6 +12,7 @@ import UIKit
 
 struct SpaceshipConstants {
     static let spaceshipSize: CGFloat = 20
+    static let spaceshipMaxSpeed: CGFloat = 0.2
 }
 
 class Spaceship: SKSpriteNode {
@@ -49,13 +50,14 @@ class Spaceship: SKSpriteNode {
         body.friction = 0.8
         body.linearDamping = 0
         body.angularDamping = 0
+        // when applying impulse to the ship, after some times it start rotating around the z axis
+        // it might be due to the fact that the center of the object is not well positionned
         body.allowsRotation = false
         return body
     }
     
     func updatePropulsorForceVector() {
-        let maxSpeed: CGFloat = 0.2
-        let vectorLength = speedPercent * maxSpeed
+        let vectorLength = speedPercent * SpaceshipConstants.spaceshipMaxSpeed
         let dx = vectorLength * sin(-zRotation)
         let dy = vectorLength * cos(-zRotation)
         propulsorForceVector = CGVector(dx: dx, dy: dy)

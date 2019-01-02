@@ -33,13 +33,12 @@ class GameViewController: UIViewController {
             return
         }
         
-        view.addSubview(joystickView)
         joystickView.joystickDelegate = scene
-        joystickView.frame = CGRect(x: view.bounds.size.width - Constants.joystickSize - Constants.joystickMargin,
-                                    y: view.bounds.size.height - Constants.joystickSize - Constants.joystickMargin,
+        joystickView.frame = CGRect(x: 0,
+                                    y: 0,
                                     width: Constants.joystickSize,
                                     height: Constants.joystickSize)
-
+        
         
         scene.size = view.bounds.size
         view.presentScene(scene)
@@ -47,6 +46,31 @@ class GameViewController: UIViewController {
         view.ignoresSiblingOrder = true
         view.showsFPS = true
         view.showsNodeCount = true
+    }
+    
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        guard touches.count == 1,
+            let location = touches.first?.location(in: view) else {
+                return
+        }
+        joystickView.center = location
+        view.addSubview(joystickView)
+        joystickView.touchesBegan(touches, with: event)
+    }
+    
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+        guard touches.count == 1 else {
+            return
+        }
+        joystickView.touchesMoved(touches, with: event)
+    }
+    
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        guard touches.count == 1 else {
+            return
+        }
+        joystickView.touchesEnded(touches, with: event)
+        joystickView.removeFromSuperview()
     }
 }
 
