@@ -61,7 +61,7 @@ class GameScene: SKScene {
     @objc
     private func handleZoom(for gestureRecognizer: UIPinchGestureRecognizer) {
         if gestureRecognizer.state == .changed {
-            let newScale = (camera?.xScale ?? 1) + (1.0 - gestureRecognizer.scale)
+//            let newScale = (camera?.xScale ?? 1) + (1.0 - gestureRecognizer.scale)
             let oldScale = 1.0/gestureRecognizer.scale
             camera?.setScale(oldScale)
         }
@@ -74,6 +74,9 @@ class GameScene: SKScene {
         if let propulsorVector = spaceship?.propulsorForceVector {
             spaceship?.physicsBody?.applyImpulse(propulsorVector)
         }
+    }
+    
+    override func didSimulatePhysics() {
         if let spaceshipPosition = spaceship?.position {
             camera?.position = spaceshipPosition
         }
