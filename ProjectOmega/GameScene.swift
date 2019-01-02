@@ -10,31 +10,8 @@ import SpriteKit
 import GameplayKit
 import UIKit
 
-class Spaceship: SKSpriteNode {
-
-    var reactorNode: SKEmitterNode?
-
-    var speedPercent: CGFloat = 0 {
-        didSet {
-            let maxParticules: CGFloat = 200
-            reactorNode?.particleBirthRate = speedPercent * maxParticules
-        }
-    }
-
-    var propulsorForceVector: CGVector?
-
-    func updatePropulsorForceVector() {
-        let maxSpeed: CGFloat = 0.2
-        let vectorLength = speedPercent * maxSpeed
-        let dx = vectorLength * sin(-zRotation)
-        let dy = vectorLength * cos(-zRotation)
-        propulsorForceVector = CGVector(dx: dx, dy: dy)
-    }
-}
-
 private struct Constants {
     static let planetRadius: CGFloat = 50
-    static let spaceshipSize: CGFloat = 20
 }
 
 class GameScene: SKScene {
@@ -114,30 +91,9 @@ class GameScene: SKScene {
     }
 
     private func addSpaceship() {
-        let spaceship = Spaceship(imageNamed: "Spaceship")
-        spaceship.size = CGSize(width: Constants.spaceshipSize, height: Constants.spaceshipSize)
-        spaceship.zPosition = 0
-        spaceship.physicsBody = createSpaceshipBody()
-        if let emitterNode = SKEmitterNode(fileNamed: "fireParticles.sks") {
-            emitterNode.xScale = 0.3
-            emitterNode.yScale = 0.3
-            emitterNode.particleBirthRate = 0
-            emitterNode.zPosition = -1
-            spaceship.addChild(emitterNode)
-            spaceship.reactorNode = emitterNode
-        }
+        let spaceship = Spaceship.defaultSpaceship()
         self.spaceship = spaceship
         addChild(spaceship)
-    }
-
-    private func createSpaceshipBody() -> SKPhysicsBody {
-        let bodySize = CGSize(width: 0.8 * Constants.spaceshipSize, height: 0.8 * Constants.spaceshipSize)
-        let body = SKPhysicsBody(rectangleOf: bodySize)
-        body.friction = 0.8
-        body.linearDamping = 0
-        body.angularDamping = 0
-        body.allowsRotation = false
-        return body
     }
 }
 

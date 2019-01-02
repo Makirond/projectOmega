@@ -15,6 +15,7 @@
 		BE6147F821066C3300564785 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BE6147F721066C3300564785 /* Assets.xcassets */; };
 		BE6147FB21066C3300564785 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BE6147F921066C3300564785 /* LaunchScreen.storyboard */; };
 		DB0166C221D8258F00E7A466 /* JoystickView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB0166C121D8258F00E7A466 /* JoystickView.swift */; };
+		DB3F5DB221DD0DDD0086E691 /* Spaceship.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB3F5DB121DD0DDD0086E691 /* Spaceship.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,6 +29,7 @@
 		BE6147FA21066C3300564785 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		BE6147FC21066C3300564785 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		DB0166C121D8258F00E7A466 /* JoystickView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoystickView.swift; sourceTree = "<group>"; };
+		DB3F5DB121DD0DDD0086E691 /* Spaceship.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Spaceship.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -60,6 +62,7 @@
 		BE6147E921066C3200564785 /* ProjectOmega */ = {
 			isa = PBXGroup;
 			children = (
+				DB3F5DB021DD0DC00086E691 /* GameObjects */,
 				BE6147EA21066C3200564785 /* AppDelegate.swift */,
 				BE6147F021066C3200564785 /* GameScene.swift */,
 				BE6147F221066C3200564785 /* GameViewController.swift */,
@@ -71,6 +74,14 @@
 				BE17BF312107C23F003CA187 /* fireParticles.sks */,
 			);
 			path = ProjectOmega;
+			sourceTree = "<group>";
+		};
+		DB3F5DB021DD0DC00086E691 /* GameObjects */ = {
+			isa = PBXGroup;
+			children = (
+				DB3F5DB121DD0DDD0086E691 /* Spaceship.swift */,
+			);
+			path = GameObjects;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -150,6 +161,7 @@
 				DB0166C221D8258F00E7A466 /* JoystickView.swift in Sources */,
 				BE6147F321066C3200564785 /* GameViewController.swift in Sources */,
 				BE6147EB21066C3200564785 /* AppDelegate.swift in Sources */,
+				DB3F5DB221DD0DDD0086E691 /* Spaceship.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
