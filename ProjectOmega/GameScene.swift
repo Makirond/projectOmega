@@ -44,15 +44,6 @@ class GameScene: SKScene {
     private var pinchRecognizer: UIPinchGestureRecognizer?
 
 
-    func joystickOrientationChanged(to newAngleInRadian: CGFloat){
-        spaceship?.zRotation = newAngleInRadian
-        physicsBody?.angularVelocity = 0
-    }
-
-    func joystickPowerChanged(to newValueInPercent:Double){
-        spaceship?.speedPercent = CGFloat(newValueInPercent)
-    }
-
     // MARK: - Life cycle
 
     override func didMove(to view: SKView) {
@@ -70,7 +61,9 @@ class GameScene: SKScene {
     @objc
     private func handleZoom(for gestureRecognizer: UIPinchGestureRecognizer) {
         if gestureRecognizer.state == .changed {
-            camera?.setScale(1.0/gestureRecognizer.scale)
+            let newScale = (camera?.xScale ?? 1) + (1.0 - gestureRecognizer.scale)
+            let oldScale = 1.0/gestureRecognizer.scale
+            camera?.setScale(oldScale)
         }
     }
 
@@ -80,6 +73,9 @@ class GameScene: SKScene {
         spaceship?.updatePropulsorForceVector()
         if let propulsorVector = spaceship?.propulsorForceVector {
             spaceship?.physicsBody?.applyImpulse(propulsorVector)
+        }
+        if let spaceshipPosition = spaceship?.position {
+            camera?.position = spaceshipPosition
         }
     }
 
@@ -139,4 +135,17 @@ class GameScene: SKScene {
         body.angularDamping = 0
         return body
     }
+}
+
+extension GameScene: JoystickDelegate {
+    
+    func joystickOrientationChanged(to newAngleInRadian: CGFloat){
+        spaceship?.zRotation = newAngleInRadian
+        physicsBody?.angularVelocity = 0
+    }
+    
+    func joystickPowerChanged(to newValueInPercent:Double){
+        spaceship?.speedPercent = CGFloat(newValueInPercent)
+    }
+
 }

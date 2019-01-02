@@ -11,8 +11,9 @@ import SpriteKit
 import GameplayKit
 
 private struct Constants {
-    static let joystickSize: CGFloat = 200.0
+    static let joystickSize: CGFloat = 150.0
     static let centerJoystickZoneSize: CGFloat = 0.5 * joystickSize
+    static let joystickMargin: CGFloat = 40.0
 }
 
 class GameViewController: UIViewController {
@@ -23,8 +24,7 @@ class GameViewController: UIViewController {
         return scene
     }()
     
-    private let joystickView = UIView()
-    private let joystickCenterView = UIView()
+    private let joystickView = JoystickView()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -32,28 +32,14 @@ class GameViewController: UIViewController {
         guard let view = self.view as? SKView else {
             return
         }
+        
         view.addSubview(joystickView)
-        joystickView.backgroundColor = .white
-        joystickView.clipsToBounds = true
-        joystickView.frame = CGRect(x: view.bounds.size.width - Constants.joystickSize,
-                                    y: view.bounds.size.height - Constants.joystickSize,
+        joystickView.joystickDelegate = scene
+        joystickView.frame = CGRect(x: view.bounds.size.width - Constants.joystickSize - Constants.joystickMargin,
+                                    y: view.bounds.size.height - Constants.joystickSize - Constants.joystickMargin,
                                     width: Constants.joystickSize,
                                     height: Constants.joystickSize)
-        joystickView.layer.cornerRadius = 0.5 * Constants.joystickSize
-        let leftGestureRecognizer = UIPanGestureRecognizer(target: self,
-                                                           action: #selector(handleJoystickPan(gesture:)))
-        joystickView.addGestureRecognizer(leftGestureRecognizer)
-        
-        view.addSubview(joystickCenterView)
-        joystickCenterView.backgroundColor = .black
-        joystickCenterView.clipsToBounds = true
-        joystickCenterView.frame = CGRect(x: 0,
-                                          y: 0,
-                                          width: Constants.centerJoystickZoneSize,
-                                          height: Constants.centerJoystickZoneSize)
-        joystickCenterView.layer.cornerRadius = 0.5 * Constants.centerJoystickZoneSize
-        joystickCenterView.center = joystickView.center
-        joystickCenterView.isUserInteractionEnabled = false
+
         
         scene.size = view.bounds.size
         view.presentScene(scene)
@@ -62,27 +48,10 @@ class GameViewController: UIViewController {
         view.showsFPS = true
         view.showsNodeCount = true
     }
-    
-    @objc private func handleJoystickPan(gesture: UIPanGestureRecognizer) {
-        let location = gesture.location(in: scene.view)
-        let distanceToCenter = location.distance(to: joystickView.center)
-        if distanceToCenter <= 0.5 * Constants.joystickSize {
-            let dx = location.x - joystickView.center.x
-            let dy = location.y - joystickView.center.y
-            let angle = -atan2(dy, dx) - CGFloat.pi / 2.0
-            scene.joystickOrientationChanged(to: angle)
-
-            if distanceToCenter > 0.5 * Constants.centerJoystickZoneSize {
-                let powerInPercent = (distanceToCenter - 0.5 * Constants.centerJoystickZoneSize)
-                    / (0.5 * (Constants.joystickSize - Constants.centerJoystickZoneSize))
-                scene.joystickPowerChanged(to: Double(powerInPercent))
-            }
-        }
-    }
 }
 
 extension CGPoint {
-    fileprivate func distance(to point: CGPoint) -> CGFloat {
+    func distance(to point: CGPoint) -> CGFloat {
         return sqrt(pow(x - point.x, 2) + pow(y - point.y, 2))
     }
 }
