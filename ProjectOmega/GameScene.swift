@@ -136,6 +136,7 @@ class GameScene: SKScene {
         body.friction = 0.8
         body.linearDamping = 0
         body.angularDamping = 0
+        body.allowsRotation = false
         return body
     }
 }
